@@ -3,7 +3,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <!-- 💡 LINE分享最佳化：完美顯示 TCL規格查詢 -->
     <title>TCL規格查詢</title>
     <meta property="og:title" content="TCL規格查詢">
     <meta property="og:type" content="website">
@@ -11,27 +10,18 @@
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background-color: #f8fafc; margin: 0; padding: 0; box-sizing: border-box; }
         header { background: linear-gradient(to right, #4338ca, #6d28d9); padding: 20px 16px; position: sticky; top: 0; z-index: 10; box-shadow: 0 4px 10px rgba(0,0,0,0.1); }
         .search-container { max-width: 600px; margin: 0 auto; width: 100%; }
-        
-        /* 搜尋框字體：大2號（24px / 粗體） */
         #searchInput { width: 100%; padding: 14px 18px; font-size: 24px !important; font-weight: 800 !important; color: #0f172a; border: none; border-radius: 12px; box-shadow: inset 0 2px 4px rgba(0,0,0,0.06); box-sizing: border-box; }
-        
         #matchCount { text-align: center; font-size: 15px; font-weight: bold; color: #ddd6fe; margin-top: 12px; margin-bottom: 4px; }
         main { padding: 20px 12px; max-width: 600px; margin: 0 auto; box-sizing: border-box; }
-        
         .spinner { display: inline-block; width: 36px; height: 36px; border: 4px solid #4338ca; border-top-color: transparent; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 12px auto; }
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         #loading { text-align: center; padding: 80px 0; color: #94a3b8; }
         #noResult { text-align: center; padding: 80px 0; color: #94a3b8; font-weight: bold; font-size: 16px; }
-        
-        /* 各筆記錄拉開 48px */
         .card-box { background-color: #ffffff; border-radius: 20px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05), 0 4px 6px -4px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; margin-bottom: 48px !important; overflow: hidden; display: flex; flex-direction: column; }
-        
         .wrap { word-break: break-all; white-space: pre-wrap; }
-        /* 完美的內外方框與格線表格 */
         .grid-table { width: 100%; table-layout: fixed; border-collapse: collapse !important; border: 1px solid #94a3b8 !important; }
         .grid-table tr { border-bottom: 1px solid #cbd5e1 !important; }
         .grid-table td { border: 1px solid #cbd5e1 !important; padding: 16px 12px !important; font-size: 14px; vertical-align: top; box-sizing: border-box; }
-        
         .title-td { width: 100px; text-align: right; font-weight: bold; color: #64748b; background-color: #f8fafc; user-select: none; border-right: 1px solid #cbd5e1 !important; }
         .hi-tr { background-color: #fef3c7 !important; }
         .hi-title-td { color: #92400e !important; font-weight: bold; background-color: #fef3c7 !important; }
@@ -49,18 +39,16 @@
         <div id="cardContainer" style="display: none;"></div>
         <div id="noResult" style="display: none;"><p style="font-size: 48px; margin: 0 0 12px 0;">🔍</p>查無此機型或相關料號</div>
     </main>
-
     <script>
         // ==========================================================
-        // 💡 請在此處填入您的 Google 試算表 ID
-        const SPREADSHEET_ID = '15jeVPJYNf142ZWA2GVYmieEG0fR4hkZ_SVzyGYVqAQ8'; 
+        // 💡 已經為您切換為「規格」工作表名稱
+        const SPREADSHEET_ID = '把這裡換成您的Google試算表ID'; 
+        const SHEET_NAME = '規格'; 
         // ==========================================================
-        // 使用 Google Visualization API 去讀純乾淨格子，最相容 GitHub
-        const API_URL = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:json`;
+        const API_URL = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
         let allRawRows = [];
         const searchKeys = ['機型', '主板料號', '機蕊型號', '電源板編號'];
         
-        // 嚴格遵循您指定的 29 個規格欄位順序方式
         const sortedLabels = [
             '適用電壓', '重量', '外觀尺寸', '國際條碼', '射頻編號', '功耗', '基座', 
             '分位', 'PID碼', '主板料號', '機蕊型號', '電源板編號', '驅動板A', '驅動板B', 
@@ -69,7 +57,6 @@
         ];
 
         window.addEventListener('load', () => {
-            // 初始物理安全鎖
             document.getElementById('noResult').style.display = 'none';
             document.getElementById('cardContainer').style.display = 'none';
 
@@ -80,18 +67,15 @@
                     const data = JSON.parse(jsonString);
                     const rows = data.table.rows;
                     
-                    // 💡 將 Google API 資料洗成最純淨的二維陣列（純格子）
                     allRawRows = rows.map(row => {
                         return row.c.map(cell => cell ? String(cell.v).trim() : '');
                     });
                     
-                    // 排除第一列標題，只保留純紀錄列
-                    if(allRawRows.length > 0) allRawRows.shift();
-
+                    if(allRawRows.length > 0) allRawRows.shift(); // 排除標題列
                     document.getElementById('loading').style.display = 'none';
                 })
                 .catch(err => {
-                    document.getElementById('loading').innerHTML = "資料同步失敗，請檢查試算表共用權限。";
+                    document.getElementById('loading').innerHTML = '<span style="color:#ef4444; font-weight:bold;">資料同步失敗、請檢查試算表共用權限與分頁名稱</span>';
                 });
         });
 
@@ -117,22 +101,16 @@
             filteredRows.forEach(rowArr => {
                 const card = document.createElement('div');
                 card.className = "card-box";
+                const currentModel = rowArr || '未填寫';
                 
-                // 物理位置：第 1 欄絕對是「機型」
-                const currentModel = rowArr[0] || '未填寫';
-                
-                // 「機型」標籤字體大2號（15px）
                 let html = `<table class="grid-table" style="background: linear-gradient(to right, #1e293b, #0f172a); border: none !important;"><tr style="border: none !important;"><td class="title-td" style="width: 100px; text-align: center; color: #ffffff; background: transparent; border: none !important; padding: 16px 12px !important;"><span style="padding: 4px 6px; background-color: #6366f1; border-radius: 5px; font-size: 15px; display: block; font-weight: bold;">機型</span></td><td style="color: #ffffff; font-weight: bold; font-size: 20px; text-align: left; padding: 16px 12px !important; border: none !important;"><div class="wrap">${currentModel}</div></td></tr></table>`;
-                
                 html += `<table class="grid-table"><tbody>`;
                 
-                // 物理填充：依序將第 2 欄至第 30 欄的數值精確倒入格子中，內文絕對不留白！
                 sortedLabels.forEach((labelName, index) => {
                     const cellValue = rowArr[index + 1] || '';
                     const isHi = searchKeys.includes(labelName); 
                     const rCls = isHi ? 'class="hi-tr"' : '';
                     const tCls = isHi ? 'hi-title-td' : 'title-td';
-                    
                     html += `<tr ${rCls}><td class="${tCls}">${labelName}</td><td style="text-align: left;"><div class="wrap">${getDisplayValue(cellValue)}</div></td></tr>`;
                 });
                 
@@ -156,16 +134,12 @@
                 return; 
             }
             
-            // 終極全方位模糊搜尋
             const filtered = allRawRows.filter(rowArr => {
-                return rowArr.some(cellVal => 
-                    String(cellVal || '').toLowerCase().includes(kw)
-                );
+                return rowArr.some(cellVal => String(cellVal || '').toLowerCase().includes(kw));
             });
             
             countEl.innerText = `💡 共符合 ${filtered.length} 筆資料`;
             countEl.style.display = 'block';
-            
             renderCards(filtered);
         });
     </script>
