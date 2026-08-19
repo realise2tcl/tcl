@@ -41,11 +41,12 @@
     </main>
     <script>
         // ==========================================================
-        // 💡 已經為您切換為「規格」工作表名稱
-        const SPREADSHEET_ID = '把這裡換成您的Google試算表ID'; 
+        const SPREADSHEET_ID = '15jeVPJYNf142ZWA2GVYmieEG0fR4hkZ_SVzyGYVqAQ8'; 
         const SHEET_NAME = '規格'; 
         // ==========================================================
-        const API_URL = `https://google.com{SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+        // 💡 這裡就是用積木拼接而成的讀取網址，百分之百避免被系統截斷
+        const API_URL = 'https://google.com' + SPREADSHEET_ID + '/gviz/tq?tqx=out:json&sheet=' + encodeURIComponent(SHEET_NAME);
+        
         let allRawRows = [];
         const searchKeys = ['機型', '主板料號', '機蕊型號', '電源板編號'];
         
@@ -101,7 +102,7 @@
             filteredRows.forEach(rowArr => {
                 const card = document.createElement('div');
                 card.className = "card-box";
-                const currentModel = rowArr || '未填寫';
+                const currentModel = rowArr[0] || '未填寫';
                 
                 let html = `<table class="grid-table" style="background: linear-gradient(to right, #1e293b, #0f172a); border: none !important;"><tr style="border: none !important;"><td class="title-td" style="width: 100px; text-align: center; color: #ffffff; background: transparent; border: none !important; padding: 16px 12px !important;"><span style="padding: 4px 6px; background-color: #6366f1; border-radius: 5px; font-size: 15px; display: block; font-weight: bold;">機型</span></td><td style="color: #ffffff; font-weight: bold; font-size: 20px; text-align: left; padding: 16px 12px !important; border: none !important;"><div class="wrap">${currentModel}</div></td></tr></table>`;
                 html += `<table class="grid-table"><tbody>`;
